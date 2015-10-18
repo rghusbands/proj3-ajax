@@ -6,3 +6,8 @@
  * add more specific styles. 
  */
 
+@media (max-width: 991px) {
+    [class*="col-"]{
+        margin-bottom: 15px;
+    }
+}

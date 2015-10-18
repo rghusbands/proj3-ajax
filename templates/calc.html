@@ -31,14 +31,6 @@
 
 <h1>ACP Brevet Closing times</h1>
 
-  <!--
-  -- If there are any warnings or other messages from a prior
-  -- request to the server, 
-  -- they appear above the rest of the content, just until the next 
-  -- action.  (This is only on request/response transactions that
-  -- result in regenerating the page, not on every xmlhttp request.) 
-  -->
-
 {% with messages = get_flashed_messages() %}
   {% if messages %}
     <ul class=flashes>
@@ -52,80 +44,81 @@
 <!-- Design on bootstrap grid -->
 <form role="form">
 <div class="row">
-  <div class="col-md-2">
-    <input type="text" class="form-control"
-     name="miles" value="Distance in miles"/>
-  </div>
-  <div class="col-md-4">
-    <input type="text" class="form-control"
-      name="location" value="location" />
-  </div>
-  <div class="col-md-4">
-    <span class="times form-control">(times)</span>
-  </div>
+    <label class="col-md-2" for="inunits">Units for input Distance:</label>
+        <select class="control-label col-md-2" id="inunits">
+            <option>-choose-</option>
+            <option>Miles</option>
+            <option>Kilometers</option>
+        </select>
 </div>
 
 <div class="row">
-  <div class="col-md-2">
-    <input type="text" class="form-control"
-     name="miles" value="Distance in miles"/>
-  </div>
-  <div class="col-md-4">
-    <input type="text" class="form-control"
-      name="location" value="location" />
-  </div>
-  <div class="col-md-4">
-    <span class="times form-control">(times)</span>
-  </div>
+    <label class="col-md-2" for="distance">Distances (km):</label>
+        <select class="control-label col-md-2" id="distance">
+            <option>-choose-</option>
+            <option>200</option>
+            <option>300</option>
+            <option>400</option>
+            <option>600</option>
+            <option>1000</option>
+        </select>
 </div>
 
 <div class="row">
+    <label class="col-md-4" for="dateandtime">Starting Date and 24hr Time(MM/DD/YY HH:MM):</label>
+        <input class="col-md-2" name="starttime" placeholder="MM/DD/YY HH:MM">
+</div>
+
+<h2>                                                                            </h2>
+
+Checkpoints (Please start with Distance 0 to start!):
+{% for i in range(10) %}
+<div class="row">
   <div class="col-md-2">
-    <input type="text" class="form-control"
-     name="miles" value="Distance in miles"/>
+    <input type="text" class="form-control" name="miles" placeholder="Distance"/>
   </div>
   <div class="col-md-4">
-    <input type="text" class="form-control"
-      name="location" value="location" />
+    <input type="text" class="form-control" name="location" placeholder="Location"/>
   </div>
   <div class="col-md-4">
-    <span class="times form-control">(times)</span>
+      <span class="times form-control">(times)</span>
   </div>
 </div>
+<h3>                                                                            </h3>
+{% endfor %}
+
 </form>
 
 <script type="text/javascript">
-
+  var e_count = 0;
   $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
-
+  
   $(document).ready(function(){
-   // Do the following when the page is finished loading
 
-      // When a field named 'miles' is changed ...
       $('input[name="miles"]').change(
+
           // ... execute this function
           function(){
               var e_miles = $(this).val();
-
+              var racedistance = $('#distance option:selected').text();
+              var theunits = $('#inunits option:selected').text();
+              var currenttime = $('input[name="starttime"]').val();
               var target = $(this).parents(".row").find(".times");
-
-              // DEBUG: How do I replace the 'times' field?
-              // alert("Content of the field I want to change: " +
-              //   target.html());
-
+              if (e_miles > 1.1*racedistance){
+                  alert("Careful. Distance entered is 10% larger than the max distance");
+              }
+              
               // AJAX request
               $.getJSON($SCRIPT_ROOT + '/_calc_times',
                   // The object to pass to the server
-                  { miles: e_miles },
+                  { miles: e_miles, distance: racedistance, currenttime: currenttime, units: theunits, count: e_count },
                   // The function to call with the response
                   function(data) {
                      var times = data.result;
-                     // alert("Got a response: " +  times);
+                     e_count = data.count;
                      target.text(times);
                   }); // End of the call to getJSON
           });  // End of the function to be called when field changes
-              
-
      });   // end of what we do on document ready
 
 </script>
